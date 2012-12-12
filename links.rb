@@ -1,32 +1,45 @@
 require 'nokogiri'
 require 'open-uri'
-def linksSearch http,number
-	file=File.open("text.txt","w+")
-	mas=Array.new
-	mas.push http
-	n=number
-	i=0
-	while n!=0
-		l=mas.size
-		while i<l
-			page=Nokogiri::HTML(open(mas[i])) if mas[i]
-			page.css('a').each do |link|
+class Crawler
+	attr_accessor :http, :file, :links, :used, :level
+	
+	def initialize http
+		@http=http
+		@links=Array.new
+		@used=Array.new
+		@links.push @http
+		@level=level
+		@i=0
+	end
+
+	def links_search level
+		l=@links.size
+		while @i<l
+			page=Nokogiri::HTML(open(@links[@i])) if @links[@i] && !@used.include?(@links[@i]) 
+			page.css('a.b-rubric__list__item__link').each do |link|
 				if link['href'][0]=='/'
-					mas.push http+link['href']
+					@links.push @http+link['href']
 				else
-					mas.push link['href']
+					@links.push link['href']
 				end
 			end
-		i+=1
+		@used.push @links[@i]
+		@i+=1
 		end
-		n-=1
+		links_search(level-1) unless level<=1 	
+		@i=0
 	end
-	mas.each do |x|
-		file.write "[ "+x+" ]"
+	def write_to_file name
+		@file=File.open(name,"w+")
+		@links.each do |x|
+			@file.write "[ "+x+" ]"
+		end
 	end
 end
 http,number= ARGV
 number=number.to_i
-linksSearch(http,number)
+var= Crawler.new("http://catalog.yandex.ru/")
+var.links_search(3)
+var.write_to_file("text.txt")
 
 
