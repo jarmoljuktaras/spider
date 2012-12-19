@@ -16,7 +16,7 @@ class Crawler
 		l=@links.size
 		while @i<l
 			page=Nokogiri::HTML(open(@links[@i])) if @links[@i] && !@used.include?(@links[@i]) 
-			page.css('a.b-rubric__list__item__link').each do |link|
+			page.css('a').each do |link|
 				if link['href'][0]=='/'
 					@links.push @http+link['href']
 				else
@@ -36,10 +36,5 @@ class Crawler
 		end
 	end
 end
-http,number= ARGV
-number=number.to_i
-var= Crawler.new("http://catalog.yandex.ru/")
-var.links_search(3)
-var.write_to_file("text.txt")
 
 
